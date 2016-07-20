@@ -1,0 +1,320 @@
+Chef Installation And Configuaration
+
+
+https://docs.chef.io/install_server.html
+
+
+Chef Client
+
+The Chef client works with the Chef server to bring systems to their desired states with policies you provide as recipes. 
+
+
+https://packages.chef.io/stable/el/6/chef-12.11.18-1.el6.x86_64.rpm
+
+
+sudo rpm -Uvh chef-12.11.18-1.el6.x86_64.rpm
+
+Install the Chef Server
+
+There are three configuration scenarios for the Chef server:
+•Standalone (everything on a single machine)
+•High availability (machines configured for front-end and back-end, allowing for failover on the back-end and load-balancing on the front-end, as required)
+•Tiered (machines configured for front-end and back-end, with a single back-end and load-balancing on the front-end, as required)
+
+Prerequisites
+
+The Chef server has the following prerequisites:
+•An x86_64 compatible system architecture; Red Hat Enterprise Linux and CentOS may require updates prior to installation
+•A resolvable hostname that is specified using a FQDN or an IP address
+•A connection to Network Time Protocol (NTP) to prevent clock drift
+•A local mail transfer agent that allows the Chef server to send email notifications
+•Using cron and the /etc/cron.d directory for periodic maintenance tasks
+•Disabling the Apache Qpid daemon on CentOS and Red Hat systems
+•Optional. A local user account under which services will run, a local user account for PostgreSQL, and a group account under which services will run. See https://docs.chef.io/install_server_pre.html#uids-and-gids for more information
+
+
+Standalone
+
+The standalone installation of Chef server creates a working installation on a single server. This installation is also useful when you are installing Chef server in a virtual machine, for proof-of-concept deployments, or as a part of a development or testing loop.
+
+To install Chef server 12
+
+
+1.Download the package from http://downloads.chef.io/chef-server/.
+2.Upload the package to the machine that will run the Chef server, and then record its location on the file system. The rest of these steps assume this location is in the /tmp directory.
+3.As a root user, install the Chef server package on the server, using the name of the package provided by Chef. 
+
+For Red Hat and CentOS 6:
+$ sudo rpm -Uvh chef-12.11.18-1.el6.x86_64.rpm
+
+For Ubuntu:
+$ dpkg -i /tmp/chef-server-core-<version>.deb
+
+4.Run the following to start all of the services:
+
+$ chef-server-ctl reconfigure
+
+Because the Chef server is composed of many different services that work together to create a functioning system, this step may take a few minutes to complete.
+
+
+5.Run the following command to create an administrator:
+
+$ chef-server-ctl user-create USER_NAME FIRST_NAME LAST_NAME EMAIL 'PASSWORD' --filename FILE_NAME
+
+An RSA private key is generated automatically. This is the user’s private key and should be saved to a safe location. The --filename option will save the RSA private key to a specified path.
+
+For example:
+
+
+$ chef-server-ctl user-create chef chef chef chef@dell.com 'chef123' --filename /home/oracle/chef/chef.pem
+
+chef-server-ctl user-create oracle 'Varnika' 'IT Services Inc' varnikaitservicesinc@gmail.com 'varnika123' --filename /etc/chef/oracle.pem
+chef-server-ctl org-create varnikaitservicesinc 'Varnika IT Services, Inc.' --association_user oracle --filename /etc/chef/varnikaitservicesinc-validator.pem
+
+
+
+
+
+6.Run the following command to create an organization:
+
+$ chef-server-ctl org-create short_name 'full_organization_name' --association_user user_name --filename ORGANIZATION
+
+The name must begin with a lower-case letter or digit, may only contain lower-case letters, digits, hyphens, and underscores, and must be between 1 and 255 characters. For example: 4thcoffee.
+
+The full name must begin with a non-white space character and must be between 1 and 1023 characters. For example: 'Fourth Coffee, Inc.'.
+
+The --association_user option will associate the user_name with the admins security group on the Chef server.
+
+An RSA private key is generated automatically. This is the chef-validator key and should be saved to a safe location. The --filename option will save the RSA private key to a specified path.
+
+For example:
+
+
+$ chef-server-ctl org-create dell 'Dell, Inc.' --association_user chef --filename /home/oracle/chef/dellinc-validator.pem
+
+
+7.Enable additional features of the Chef server! The packages may be downloaded directly as part of the installation process or they may be first downloaded to a local directory, and then installed.
+
+Use Downloads
+
+The install subcommand downloads packages from https://packages.chef.io/ by default. For systems that are not behind a firewall (and have connectivity to https://packages.chef.io/), these packages can be installed as described below.
+
+Chef Manage  ===> Use Chef management console to manage data bags, attributes, run-lists, roles, environments, and cookbooks from a web user interface.
+
+On the Chef server, run:
+
+
+$ chef-server-ctl install chef-manage
+
+then:
+
+
+$ chef-server-ctl reconfigure
+
+
+and then:
+
+
+$ chef-manage-ctl reconfigure
+
+Note
+
+Starting with the Chef management console 2.3.0, the Chef MLSA must be accepted when reconfiguring the product. If the Chef MLSA has not already been accepted, the reconfigure process will prompt for a yes to accept it. Or run chef-manage-ctl reconfigure --accept-license to automatically accept the license.
+
+
+
+
+Install packages using cli
+
+chef-manage
+
+https://downloads.chef.io/chef-manage/redhat/
+
+
+https://packages.chef.io/stable/el/6/chef-manage-2.4.0-1.el6.x86_64.rpm
+
+rpm -Uvh chef-manage-2.4.0-1.el6.x86_64.rpm
+
+or
+
+chef-server-ctl install chef-manage --path /media/sf_Downloads/Chef/chef-manage-2.4.0-1.el6.x86_64.rpm 
+
+
+chef-server-ctl reconfigure
+
+chef-manage-ctl reconfigure
+
+chef-manage-ctl reconfigure --accept-license
+
+
+
+
+
+ 
+Chef-push-jobs
+
+https://downloads.chef.io/push-jobs-server/redhat/
+
+https://packages.chef.io/stable/el/5/opscode-push-jobs-server-1.1.6-1.x86_64.rpm
+
+
+rpm -Uvh opscode-push-jobs-server-1.1.6-1.x86_64.rpm
+
+or 
+
+chef-server-ctl install opscode-push-jobs-server --path /media/sf_Downloads/Chef/opscode-push-jobs-server-1.1.6-1.x86_64.rpm 
+
+chef-server-ctl reconfigure
+
+
+opscode-push-jobs-server-ctl reconfigure
+
+or 
+
+opscode-push-jobs-server-ctl reconfigure --accept-license
+
+
+
+opscode-reporting
+
+
+https://downloads.chef.io/reporting/redhat/
+
+
+https://packages.chef.io/stable/el/6/opscode-reporting-1.6.0-1.el6.x86_64.rpm
+
+rpm -Uvh opscode-reporting-1.6.0-1.el6.x86_64.rpm
+
+or
+
+chef-server-ctl install opscode-reporting --path /media/sf_Downloads/Chef/opscode-reporting-1.6.0-1.el6.x86_64.rpm 
+
+
+chef-server-ctl reconfigure
+
+opscode-reporting-ctl reconfigure --accept-license
+
+
+
+Install Chefdk 
+
+
+https://packages.chef.io/stable/el/6/chefdk-0.15.16-1.el6.x86_64.rpm
+
+https://packages.chef.io/stable/el/6/chefdk-0.15.16-1.el6.x86_64.rpm
+
+rpm -Uvh chefdk-0.15.16-1.el6.x86_64.rpm
+
+
+
+
+Check executable commands
+
+https://docs.chef.io/ctl_chef.html
+
+
+check Client Installation
+
+https://downloads.chef.io/chef-client/redhat/
+
+https://packages.chef.io/stable/el/6/chef-12.12.13-1.el6.x86_64.rpm
+
+rpm -Uvh chef-12.12.13-1.el6.x86_64.rpm
+
+Version of chef client
+chef-client -v
+
+
+
+
+Bootstrap
+
+knife bootstrap ADDRESS --ssh-user USER --ssh-password 'PASSWORD' --sudo --use-sudo-password --node-name node1 --run-list 'recipe[learn_chef_httpd]'
+
+
+knife bootstrap chefnode.us.varnika.com  --ssh-user oracle --ssh-password 'oracle -sudo --use-sudo-password --node-name chefnode.us.varnika.com 
+
+
+knife bootstrap localhost --ssh-port PORT --ssh-user vagrant --sudo --identity-file IDENTITY_FILE --node-name node1 --run-list 'recipe[learn_chef_httpd]'
+
+
+
+** BOOTSTRAP COMMANDS **
+knife bootstrap root@chefnode.us.varnika.com  -N chefnode.us.varnika.com
+knife bootstrap windows ssh FQDN (options)
+knife bootstrap windows winrm FQDN (options)
+
+
+
+knife bootstrap chefnode.us.varnika.coml -x root -P oracle -N chefnode.us.varnika.com -sudo -V -V 
+
+
+
+Learning Chef
+
+https://learn.chef.io/learn-the-basics/rhel/make-your-recipe-more-manageable/#step1
+https://learn.chef.io/learn-the-basics/rhel/make-your-recipe-more-manageable/#step2
+https://learn.chef.io/learn-the-basics/rhel/make-your-recipe-more-manageable/#step3
+
+Deploy a Chef Server, Workstation and Node on Ubuntu 14.04
+
+
+
+https://www.linode.com/docs/applications/chef/deploy-a-chef-server-workstation-and-node-on-ubuntu-14-04
+
+
+
+
+https://learn.chef.io/manage-a-node/rhel/update-your-nodes-configuration/
+
+
+Build and apply a basic cookbook 
+
+https://learn.chef.io/local-development/rhel/get-started-with-test-kitchen/
+
+
+
+nife node run_list add soalab.us.varnika.com 'recipe[fmw_jdk::default],recipe[fmw_jdk::install],recipe[fmw_jdk::rng_service],recipe[fmw_wls::install],recipe[fmw_wls::setup],recipe[fmw_domain::domain],recipe[fmw_domain::nodemanager],recipe[fmw_domain::adminserver]'
+
+
+
+
+
+
+chef-client-linux.rb
+
+current_dir = File.dirname(__FILE__)
+log_level               :info
+log_location            STDOUT
+node_name               "varnikaitservicesinc"
+client_key              "#{current_dir}/varnikaitservicesinc.pem"
+chef_server_url         "https://chefserver.us.varnika.com/organizations/varnikaitservicesinc"
+cookbook_path           ["#{current_dir}/../cookbooks"]
+file_cache_path			"/tmp/chef/chef-cache"
+file_backup_path		"/tmp/chef/chef-backup"
+verbose_level			"true"
+data_bag_path			"/media/sf_Downloads/Chef/scripts"
+
+
+
+
+
+
+soa1221_domain.rsp
+
+
+WLS_DEV1.json
+
+
+
+
+
+http://oraclemiddlewareblog.com/2016/04/04/provision-oracle-fusion-middleware-with-official-chef-recipes-from-oracle/
+
+Data bag explanation
+
+
+
+    ‘knife data bag create fmw_domains’
+
+    ‘knife data bag from file fmw_domains <path>/DEV_WLS1.json’
